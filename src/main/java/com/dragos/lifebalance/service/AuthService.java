@@ -4,6 +4,7 @@ import com.dragos.lifebalance.dto.AuthResponseDto;
 import com.dragos.lifebalance.dto.LoginRequestDto;
 import com.dragos.lifebalance.dto.RegisterRequestDto;
 import com.dragos.lifebalance.entity.User;
+import com.dragos.lifebalance.exceptions.NotFoundException;
 import com.dragos.lifebalance.repository.UserRepository;
 import com.dragos.lifebalance.security.JwtService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -56,7 +57,7 @@ public class AuthService {
         boolean verify = passwordEncoder.matches(request.getPassword(), user.getPassword());
 
         if(!verify){
-            throw new RuntimeException("Invalid email or password");
+            throw new NotFoundException("Invalid email or password");
         }
         String token = jwtService.generateToken(user.getEmail());
 

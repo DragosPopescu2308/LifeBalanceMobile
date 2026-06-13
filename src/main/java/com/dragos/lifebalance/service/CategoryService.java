@@ -7,6 +7,7 @@ import com.dragos.lifebalance.dto.CategoryUpdateDto;
 import com.dragos.lifebalance.entity.Category;
 import com.dragos.lifebalance.entity.User;
 import com.dragos.lifebalance.entity.enums.CategoryType;
+import com.dragos.lifebalance.exceptions.NotFoundException;
 import com.dragos.lifebalance.repository.CategoryRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,10 +65,10 @@ public class CategoryService {
     @Transactional
     public CategoryResponseDto update(User user, Integer id, CategoryUpdateDto dto) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new NotFoundException("Category not found"));
 
         if (!category.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("Category not found");
+            throw new NotFoundException("Category not found");
         }
 
         category.setName(dto.getName());
@@ -81,10 +82,10 @@ public class CategoryService {
     @Transactional
     public void delete(User user, Integer id) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new NotFoundException("Category not found"));
 
         if (!category.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("Category not found");
+            throw new NotFoundException("Category not found");
         }
 
         categoryRepository.delete(category);

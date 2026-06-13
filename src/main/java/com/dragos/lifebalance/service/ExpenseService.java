@@ -7,6 +7,7 @@ import com.dragos.lifebalance.entity.Category;
 import com.dragos.lifebalance.entity.Expense;
 import com.dragos.lifebalance.entity.User;
 import com.dragos.lifebalance.entity.enums.CategoryType;
+import com.dragos.lifebalance.exceptions.NotFoundException;
 import com.dragos.lifebalance.repository.CategoryRepository;
 import com.dragos.lifebalance.repository.ExpenseRepository;
 import jakarta.transaction.Transactional;
@@ -61,10 +62,10 @@ public class ExpenseService {
 
     public ExpenseResponseDto getById(User user, Integer id) {
         Expense expense = expenseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Expense not found"));
+                .orElseThrow(() -> new NotFoundException("Expense not found"));
 
-        if (expense.getUser().getId() != user.getId()) {
-            throw new RuntimeException("Expense not found");
+        if (!expense.getUser().getId().equals(user.getId())) {
+            throw new NotFoundException("Expense not found");
         }
 
         return mapToDto(expense);
@@ -99,10 +100,10 @@ public class ExpenseService {
             ExpenseUpdateRequestDto request
     ) {
         Expense expense = expenseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Expense not found"));
+                .orElseThrow(() -> new NotFoundException("Expense not found"));
 
-        if (expense.getUser().getId() != user.getId()) {
-            throw new RuntimeException("Expense not found");
+        if (!expense.getUser().getId().equals(user.getId())) {
+            throw new NotFoundException("Expense not found");
         }
 
         Category category = getValidExpenseCategoryForUser(
@@ -124,10 +125,10 @@ public class ExpenseService {
     @Transactional
     public void delete(User user, Integer id) {
         Expense expense = expenseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Expense not found"));
+                .orElseThrow(() -> new NotFoundException("Expense not found"));
 
-        if (expense.getUser().getId() != user.getId()) {
-            throw new RuntimeException("Expense not found");
+        if (!expense.getUser().getId().equals(user.getId())) {
+            throw new NotFoundException("Expense not found");
         }
 
         expenseRepository.delete(expense);
@@ -138,14 +139,14 @@ public class ExpenseService {
             Integer categoryId
     ) {
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new NotFoundException("Category not found"));
 
-        if (category.getUser().getId() != user.getId()) {
-            throw new RuntimeException("Category not found");
+        if (!category.getUser().getId().equals(user.getId())) {
+            throw new NotFoundException("Category not found");
         }
 
         if (category.getType() != CategoryType.EXPENSE) {
-            throw new RuntimeException("Category must be EXPENSE");
+            throw new IllegalArgumentException("Category must be EXPENSE");
         }
 
         return category;

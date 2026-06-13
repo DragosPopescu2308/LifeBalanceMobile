@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 public class ProfileUpdateRequestDto {
     @Size(max = 100, message = "Full name must be at most 100 characters")
-    private String fullname;
+    private String fullName;
 
     @Size(max = 100, message = "About must be at most 100 characters")
     private String about;

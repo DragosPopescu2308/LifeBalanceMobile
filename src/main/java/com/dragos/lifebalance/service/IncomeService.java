@@ -7,6 +7,7 @@ import com.dragos.lifebalance.entity.Category;
 import com.dragos.lifebalance.entity.Income;
 import com.dragos.lifebalance.entity.User;
 import com.dragos.lifebalance.entity.enums.CategoryType;
+import com.dragos.lifebalance.exceptions.NotFoundException;
 import com.dragos.lifebalance.repository.CategoryRepository;
 import com.dragos.lifebalance.repository.IncomeRepository;
 import jakarta.transaction.Transactional;
@@ -23,13 +24,16 @@ public class IncomeService {
 
     private final IncomeRepository incomeRepository;
     private final CategoryRepository categoryRepository;
+    private final SavingService savingService;
 
     public IncomeService(
             IncomeRepository incomeRepository,
-            CategoryRepository categoryRepository
+            CategoryRepository categoryRepository,
+            SavingService savingService
     ) {
         this.incomeRepository = incomeRepository;
         this.categoryRepository = categoryRepository;
+        this.savingService = savingService;
     }
 
     public List<IncomeResponseDto> getIncomesForUser(User user, String month) {
@@ -61,10 +65,10 @@ public class IncomeService {
 
     public IncomeResponseDto getById(User user, Integer id) {
         Income income = incomeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Income not found"));
+                .orElseThrow(() -> new NotFoundException("Income not found"));
 
-        if (income.getUser().getId() != user.getId()) {
-            throw new RuntimeException("Income not found");
+        if (!income.getUser().getId().equals(user.getId())) {
+            throw new NotFoundException("Income not found");
         }
 
         return mapToDto(income);
@@ -88,6 +92,7 @@ public class IncomeService {
         income.setCreatedAt(LocalDateTime.now());
 
         Income savedIncome = incomeRepository.save(income);
+        savingService.processSavings(savedIncome);
 
         return mapToDto(savedIncome);
     }
@@ -99,10 +104,10 @@ public class IncomeService {
             IncomeUpdateRequestDto request
     ) {
         Income income = incomeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Income not found"));
+                .orElseThrow(() -> new NotFoundException("Income not found"));
 
-        if (income.getUser().getId() != user.getId()) {
-            throw new RuntimeException("Income not found");
+        if (!income.getUser().getId().equals(user.getId())) {
+            throw new NotFoundException("Income not found");
         }
 
         Category category = getValidIncomeCategoryForUser(
@@ -124,10 +129,10 @@ public class IncomeService {
     @Transactional
     public void delete(User user, Integer id) {
         Income income = incomeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Income not found"));
+                .orElseThrow(() -> new NotFoundException("Income not found"));
 
-        if (income.getUser().getId() != user.getId()) {
-            throw new RuntimeException("Income not found");
+        if (!income.getUser().getId().equals(user.getId())) {
+            throw new NotFoundException("Income not found");
         }
 
         incomeRepository.delete(income);
@@ -138,14 +143,14 @@ public class IncomeService {
             Integer categoryId
     ) {
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new NotFoundException("Category not found"));
 
-        if (category.getUser().getId() != user.getId()) {
-            throw new RuntimeException("Category not found");
+        if (!category.getUser().getId().equals(user.getId())) {
+            throw new NotFoundException("Category not found");
         }
 
         if (category.getType() != CategoryType.INCOME) {
-            throw new RuntimeException("Category must be INCOME");
+            throw new IllegalArgumentException("Category must be INCOME");
         }
 
         return category;
