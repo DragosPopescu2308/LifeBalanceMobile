@@ -56,11 +56,11 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(List.of(
-                "http://localhost:5500",
-                "http://127.0.0.1:5500",
-                "http://localhost:63342",
-                "http://127.0.0.1:63342"
+        config.setAllowedOriginPatterns(List.of(
+                "http://localhost:*",
+                "http://127.0.0.1:*",
+                "https://*.netlify.app",
+                "https://*.onrender.com"
         ));
 
         config.setAllowedMethods(List.of(
@@ -76,7 +76,12 @@ public class SecurityConfig {
                 "Content-Type"
         ));
 
-        config.setAllowCredentials(true);
+        config.setExposedHeaders(List.of(
+                "Authorization",
+                "Content-Disposition"
+        ));
+
+        config.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
