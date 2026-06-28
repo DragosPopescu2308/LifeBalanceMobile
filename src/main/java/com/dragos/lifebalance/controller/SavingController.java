@@ -1,6 +1,7 @@
 package com.dragos.lifebalance.controller;
 
 import com.dragos.lifebalance.dto.SavingSettingDto;
+import com.dragos.lifebalance.dto.SavingSummaryDto;
 import com.dragos.lifebalance.entity.User;
 import com.dragos.lifebalance.service.SavingService;
 import jakarta.validation.Valid;
@@ -20,9 +21,7 @@ public class SavingController {
     }
 
     @GetMapping("/settings")
-    public SavingSettingDto getSettings(
-            Authentication authentication
-    ) {
+    public SavingSettingDto getSettings(Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         return savingService.getSettings(user);
     }
@@ -46,10 +45,14 @@ public class SavingController {
     }
 
     @GetMapping("/remaining")
-    public BigDecimal remaining(
-            Authentication authentication
-    ) {
+    public BigDecimal remaining(Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         return savingService.getRemainingSavings(user);
+    }
+
+    @GetMapping("/summary")
+    public SavingSummaryDto summary(Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        return savingService.getSummary(user);
     }
 }

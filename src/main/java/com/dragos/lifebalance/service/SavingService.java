@@ -9,6 +9,8 @@ import com.dragos.lifebalance.repository.SavingSettingRepository;
 import com.dragos.lifebalance.repository.SavingsTransactionRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import com.dragos.lifebalance.dto.SavingSummaryDto;
+import com.dragos.lifebalance.repository.GoalAllocationRepository;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -22,15 +24,18 @@ public class SavingService {
     private final SavingSettingRepository savingSettingRepository;
     private final SavingsTransactionRepository savingsTransactionRepository;
     private final GoalAllocationService goalAllocationService;
+    private final GoalAllocationRepository goalAllocationRepository;
 
     public SavingService(
             SavingSettingRepository savingSettingRepository,
             SavingsTransactionRepository savingsTransactionRepository,
-            GoalAllocationService goalAllocationService
+            GoalAllocationService goalAllocationService,
+            GoalAllocationRepository goalAllocationRepository
     ) {
         this.savingSettingRepository = savingSettingRepository;
         this.savingsTransactionRepository = savingsTransactionRepository;
         this.goalAllocationService = goalAllocationService;
+        this.goalAllocationRepository = goalAllocationRepository;
     }
 
     public SavingSettingDto getSettings(User user) {
@@ -72,12 +77,36 @@ public class SavingService {
     }
 
     public BigDecimal getRemainingSavings(User user) {
-        BigDecimal totalSavings =
-                savingsTransactionRepository.sumSavingsForUser(
-                        user.getId()
-                );
+        return getSummary(user).getRemainingSavings();
+    }
 
-        return totalSavings.max(BigDecimal.ZERO);
+    public SavingSummaryDto getSummary(User user) {
+        BigDecimal totalSavings =
+                savingsTransactionRepository.sumSavingsForUser(user.getId());
+
+        BigDecimal allocatedSavings =
+                goalAllocationRepository.sumAllocatedForUser(user.getId());
+
+        if (totalSavings == null) {
+            totalSavings = BigDecimal.ZERO;
+        }
+
+        if (allocatedSavings == null) {
+            allocatedSavings = BigDecimal.ZERO;
+        }
+
+        BigDecimal remainingSavings =
+                totalSavings.subtract(allocatedSavings);
+
+        if (remainingSavings.compareTo(BigDecimal.ZERO) < 0) {
+            remainingSavings = BigDecimal.ZERO;
+        }
+
+        return new SavingSummaryDto(
+                totalSavings,
+                allocatedSavings,
+                remainingSavings
+        );
     }
 
     @Transactional

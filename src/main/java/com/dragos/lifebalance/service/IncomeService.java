@@ -36,6 +36,7 @@ public class IncomeService {
         this.savingService = savingService;
     }
 
+    @Transactional
     public List<IncomeResponseDto> getIncomesForUser(User user, String month) {
         List<Income> incomes;
 
@@ -63,6 +64,7 @@ public class IncomeService {
         return result;
     }
 
+    @Transactional
     public IncomeResponseDto getById(User user, Integer id) {
         Income income = incomeRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Income not found"));

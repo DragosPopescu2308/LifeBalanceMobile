@@ -33,6 +33,7 @@ public class ExpenseService {
         this.categoryRepository = categoryRepository;
     }
 
+    @Transactional
     public List<ExpenseResponseDto> getExpensesForUser(User user, String month) {
         List<Expense> expenses;
 
@@ -60,6 +61,7 @@ public class ExpenseService {
         return result;
     }
 
+    @Transactional
     public ExpenseResponseDto getById(User user, Integer id) {
         Expense expense = expenseRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Expense not found"));
